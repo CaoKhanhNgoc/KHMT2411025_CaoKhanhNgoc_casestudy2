@@ -1,6 +1,7 @@
 const Task = require('../models/Task');
 const User = require('../models/User');
 const { logActivity } = require('../services/taskService');
+const { notifyTaskAssigned } = require('../services/notificationService');
 
 // @desc    Get assignees list of a task
 // @route   GET /api/tasks/:id/assignees
@@ -42,6 +43,7 @@ const assignUsers = async (req, res, next) => {
     // Filter valid user IDs and merge with existing
     const currentAssigneeIds = task.assigneeIds.map((id) => id.toString());
     const newAssigneeIds = userIds.map((id) => id.toString());
+    const newlyAddedIds = newAssigneeIds.filter((id) => !currentAssigneeIds.includes(id));
     const mergedAssignees = Array.from(new Set([...currentAssigneeIds, ...newAssigneeIds]));
 
     task.assigneeIds = mergedAssignees;
@@ -52,7 +54,6 @@ const assignUsers = async (req, res, next) => {
       }
       task.primaryAssigneeId = primaryAssigneeId;
     } else if (!task.primaryAssigneeId && mergedAssignees.length > 0) {
-      // Default first assignee as primary if none
       task.primaryAssigneeId = mergedAssignees[0];
     }
 
@@ -62,6 +63,12 @@ const assignUsers = async (req, res, next) => {
       assignedUserCount: userIds.length,
       primaryAssigneeId: task.primaryAssigneeId,
     });
+
+    // Notify newly assigned users
+    if (newlyAddedIds.length > 0) {
+      const assignedUsers = await User.find({ _id: { $in: newlyAddedIds } });
+      notifyTaskAssigned(task, req.user, assignedUsers).catch(console.error);
+    }
 
     const updatedTask = await Task.findById(task._id)
       .populate('assigneeIds', 'fullName email avatarUrl')

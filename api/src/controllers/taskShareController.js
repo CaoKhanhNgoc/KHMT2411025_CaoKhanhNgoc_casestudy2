@@ -1,5 +1,7 @@
 const TaskShare = require('../models/TaskShare');
+const User = require('../models/User');
 const { logActivity } = require('../services/taskService');
+const { notifyTaskShared } = require('../services/notificationService');
 
 // @desc    Get shared users list of a task
 // @route   GET /api/tasks/:id/shares
@@ -44,7 +46,7 @@ const shareTask = async (req, res, next) => {
     const createdShares = [];
     for (const item of sharesToAdd) {
       if (item.userId.toString() === req.user._id.toString()) {
-        continue; // Don't share with creator self
+        continue;
       }
 
       const perm = ['viewer', 'editor'].includes(item.permission) ? item.permission : 'viewer';
@@ -55,6 +57,12 @@ const shareTask = async (req, res, next) => {
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
       createdShares.push(share);
+
+      // Trigger notification for each shared user
+      const recipientUser = await User.findById(item.userId);
+      if (recipientUser) {
+        notifyTaskShared(req.task, req.user, recipientUser, perm).catch(console.error);
+      }
     }
 
     await logActivity(taskId, sharedBy, 'Chia sẻ công việc', {

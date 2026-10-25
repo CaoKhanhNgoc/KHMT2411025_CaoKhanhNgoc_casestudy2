@@ -3,6 +3,7 @@ const TaskShare = require('../models/TaskShare');
 const TaskActivity = require('../models/TaskActivity');
 const { validateTaskInput } = require('../validators/taskValidator');
 const { logActivity } = require('../services/taskService');
+const { notifyTaskUpdated, notifyTaskCompleted } = require('../services/notificationService');
 
 // @desc    Get all accessible tasks with filter, search, sort, scope
 // @route   GET /api/tasks
@@ -14,7 +15,6 @@ const getTasks = async (req, res, next) => {
 
     let filter = {};
 
-    // 1. Determine Scope
     if (scope === 'created') {
       filter.createdBy = userId;
     } else if (scope === 'assigned') {
@@ -24,7 +24,6 @@ const getTasks = async (req, res, next) => {
       const sharedTaskIds = shares.map((s) => s.taskId);
       filter._id = { $in: sharedTaskIds };
     } else {
-      // Default: All tasks where user is creator, assignee, or shared
       const shares = await TaskShare.find({ userId }).select('taskId');
       const sharedTaskIds = shares.map((s) => s.taskId);
       filter.$or = [
@@ -34,7 +33,6 @@ const getTasks = async (req, res, next) => {
       ];
     }
 
-    // 2. Filter by status & priority
     if (status && status !== 'all') {
       filter.status = status;
     }
@@ -42,12 +40,10 @@ const getTasks = async (req, res, next) => {
       filter.priority = priority;
     }
 
-    // 3. Search query
     if (q && q.trim()) {
       filter.title = { $regex: q.trim(), $options: 'i' };
     }
 
-    // 4. Sorting
     let sortOptions = { createdAt: -1 };
     const sortDirection = order === 'asc' ? 1 : -1;
     if (sortBy === 'dueDate') {
@@ -178,6 +174,8 @@ const updateTask = async (req, res, next) => {
     if (startDate !== undefined) task.startDate = startDate || null;
     if (dueDate !== undefined) task.dueDate = dueDate || null;
     if (priority) task.priority = priority;
+
+    const statusChanged = status && status !== task.status;
     if (status) task.status = status;
 
     await task.save();
@@ -191,6 +189,13 @@ const updateTask = async (req, res, next) => {
         status: task.status,
       },
     });
+
+    // Notify stakeholders about updates
+    notifyTaskUpdated(task, req.user, 'Thông tin công việc được chỉnh sửa').catch(console.error);
+
+    if (statusChanged && task.status === 'completed') {
+      notifyTaskCompleted(task, req.user).catch(console.error);
+    }
 
     const updatedTask = await Task.findById(task._id)
       .populate('createdBy', 'fullName email avatarUrl')
@@ -248,6 +253,12 @@ const updateTaskStatus = async (req, res, next) => {
       from: oldStatus,
       to: status,
     });
+
+    if (status === 'completed') {
+      notifyTaskCompleted(task, req.user).catch(console.error);
+    } else {
+      notifyTaskUpdated(task, req.user, `Trạng thái đổi từ ${oldStatus} sang ${status}`).catch(console.error);
+    }
 
     res.status(200).json({
       success: true,
