@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../services/api_client.dart';
 import '../../services/auth_service.dart';
+import '../../services/statistics_service.dart';
 import '../../utils/constants.dart';
 import '../../utils/validators.dart';
+import '../../widgets/loading_view.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -12,9 +15,15 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final StatisticsService _statsService = StatisticsService();
   final _nameController = TextEditingController();
   final _avatarController = TextEditingController();
   bool _isEditing = false;
+
+  Map<String, dynamic>? _taskStats;
+  Map<String, dynamic>? _assignmentStats;
+  Map<String, dynamic>? _deadlineStats;
+  bool _isLoadingStats = true;
 
   @override
   void initState() {
@@ -24,6 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _nameController.text = user.fullName;
       _avatarController.text = user.avatarUrl ?? '';
     }
+    _loadStatistics();
   }
 
   @override
@@ -31,6 +41,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _nameController.dispose();
     _avatarController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadStatistics() async {
+    setState(() => _isLoadingStats = true);
+    try {
+      final taskStats = await _statsService.getTasksStatistics();
+      final assignmentStats = await _statsService.getAssignmentsStatistics();
+      final deadlineStats = await _statsService.getDeadlinesStatistics();
+      setState(() {
+        _taskStats = taskStats;
+        _assignmentStats = assignmentStats;
+        _deadlineStats = deadlineStats;
+      });
+    } catch (_) {
+      // ignore
+    } finally {
+      if (mounted) setState(() => _isLoadingStats = false);
+    }
   }
 
   Future<void> _saveProfile() async {
@@ -52,10 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: AppColors.priorityHigh,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.priorityHigh),
         );
       }
     }
@@ -126,10 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(e.toString()),
-                        backgroundColor: AppColors.priorityHigh,
-                      ),
+                      SnackBar(content: Text(e.toString()), backgroundColor: AppColors.priorityHigh),
                     );
                   }
                 }
@@ -139,6 +161,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         );
       },
+    );
+  }
+
+  void _showServerConfigDialog() {
+    final urlController = TextEditingController(text: ApiClient().baseUrl);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cấu Hình Địa Chỉ Máy Chủ API'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Gợi ý:\n• Android Emulator: http://10.0.2.2:3000/api\n• Máy ảo/máy thật cùng Wi-Fi: http://<IP-may-tinh>:3000/api\n• Windows/Web: http://localhost:3000/api',
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: urlController,
+              decoration: const InputDecoration(
+                labelText: 'Base API URL',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
+          ElevatedButton(
+            onPressed: () {
+              ApiClient().setBaseUrl(urlController.text.trim());
+              Navigator.pop(ctx);
+              _loadStatistics();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Đã cập nhật URL kết nối API!')),
+              );
+            },
+            child: const Text('Lưu'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String label, String value, Color color, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+            ),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -153,12 +246,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tài Khoản & Cá Nhân'),
+        title: const Text('Cá Nhân & Thống Kê'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Làm mới thống kê',
+            onPressed: _loadStatistics,
+          ),
+          IconButton(
             icon: Icon(_isEditing ? Icons.close : Icons.edit),
+            tooltip: _isEditing ? 'Đóng' : 'Sửa hồ sơ',
             onPressed: () {
               setState(() {
                 if (_isEditing) {
@@ -172,12 +271,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // User Header
             Center(
               child: CircleAvatar(
-                radius: 48,
+                radius: 44,
                 backgroundColor: AppColors.primaryLight,
                 backgroundImage:
                     (user.avatarUrl != null && user.avatarUrl!.isNotEmpty)
@@ -186,38 +287,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: (user.avatarUrl == null || user.avatarUrl!.isEmpty)
                     ? Text(
                         user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
-                        style: const TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryDark,
-                        ),
+                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primaryDark),
                       )
                     : null,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
               user.fullName,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
               user.email,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
-            const SizedBox(height: 24),
-            Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Thông Tin Cá Nhân',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const Divider(),
-                    if (_isEditing) ...[
+            const SizedBox(height: 16),
+
+            // Profile Edit Form or Info
+            if (_isEditing)
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
                       TextField(
                         controller: _nameController,
                         decoration: const InputDecoration(labelText: 'Họ và tên'),
@@ -236,29 +331,154 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: const Text('Lưu Thay Đổi'),
                       ),
-                    ] else ...[
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.person, color: AppColors.primary),
-                        title: const Text('Họ và tên'),
-                        subtitle: Text(user.fullName),
+                    ],
+                  ),
+                ),
+              ),
+
+            // Statistics Section
+            const SizedBox(height: 8),
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.bar_chart, color: AppColors.primary),
+                        SizedBox(width: 8),
+                        Text(
+                          'Thống Kê Công Việc Theo Trạng Thái',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    if (_isLoadingStats)
+                      const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (_taskStats != null) ...[
+                      Row(
+                        children: [
+                          _buildStatCard('Tổng số', '${_taskStats!['total'] ?? 0}', AppColors.primary, Icons.all_inbox),
+                          const SizedBox(width: 6),
+                          _buildStatCard('Chưa làm', '${_taskStats!['todo'] ?? 0}', AppColors.statusTodo, Icons.pending_actions),
+                          const SizedBox(width: 6),
+                          _buildStatCard('Đang làm', '${_taskStats!['inProgress'] ?? 0}', AppColors.statusInProgress, Icons.run_circle_outlined),
+                          const SizedBox(width: 6),
+                          _buildStatCard('Hoàn thành', '${_taskStats!['completed'] ?? 0}', AppColors.statusCompleted, Icons.check_circle_outline),
+                        ],
                       ),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.email, color: AppColors.primary),
-                        title: const Text('Email'),
-                        subtitle: Text(user.email),
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: ((_taskStats!['completionRate'] ?? 0) as num) / 100,
+                          backgroundColor: Colors.grey.shade200,
+                          color: AppColors.statusCompleted,
+                          minHeight: 10,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Tỷ lệ hoàn thành: ${_taskStats!['completionRate'] ?? 0}%',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                       ),
                     ],
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+
+            // Assignments & Deadlines Stats
+            if (!_isLoadingStats && _assignmentStats != null && _deadlineStats != null) ...[
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.group_work, color: AppColors.secondary),
+                          SizedBox(width: 8),
+                          Text(
+                            'Vai Trò & Phân Công',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const Divider(),
+                      Row(
+                        children: [
+                          _buildStatCard('Tôi tạo', '${_assignmentStats!['createdCount'] ?? 0}', Colors.purple, Icons.create),
+                          const SizedBox(width: 6),
+                          _buildStatCard('Được giao', '${_assignmentStats!['assignedCount'] ?? 0}', Colors.indigo, Icons.assignment_ind),
+                          const SizedBox(width: 6),
+                          _buildStatCard('Phụ trách chính', '${_assignmentStats!['primaryCount'] ?? 0}', Colors.amber.shade800, Icons.star),
+                          const SizedBox(width: 6),
+                          _buildStatCard('Được chia sẻ', '${_assignmentStats!['sharedCount'] ?? 0}', AppColors.secondary, Icons.share),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.access_time_filled, color: AppColors.priorityHigh),
+                          SizedBox(width: 8),
+                          Text(
+                            'Theo Dõi Tiến Độ & Hạn Chót',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const Divider(),
+                      Row(
+                        children: [
+                          _buildStatCard('Đã quá hạn', '${_deadlineStats!['overdueCount'] ?? 0}', AppColors.priorityHigh, Icons.warning_amber),
+                          const SizedBox(width: 8),
+                          _buildStatCard('Sắp đến hạn (24h)', '${_deadlineStats!['dueSoonCount'] ?? 0}', Colors.orange, Icons.alarm),
+                          const SizedBox(width: 8),
+                          _buildStatCard('Đúng hạn', '${_deadlineStats!['onTrackCount'] ?? 0}', AppColors.statusCompleted, Icons.timer),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+
+            // Settings & Actions
             Card(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Column(
                 children: [
+                  ListTile(
+                    leading: const Icon(Icons.settings_ethernet, color: AppColors.primary),
+                    title: const Text('Cấu hình địa chỉ máy chủ API'),
+                    subtitle: Text(ApiClient().baseUrl, style: const TextStyle(fontSize: 12)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: _showServerConfigDialog,
+                  ),
+                  const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.lock_outline, color: AppColors.primary),
                     title: const Text('Đổi mật khẩu'),
@@ -268,10 +488,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.logout, color: AppColors.priorityHigh),
-                    title: const Text(
-                      'Đăng xuất',
-                      style: TextStyle(color: AppColors.priorityHigh),
-                    ),
+                    title: const Text('Đăng xuất', style: TextStyle(color: AppColors.priorityHigh)),
                     onTap: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
@@ -279,16 +496,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           title: const Text('Xác nhận đăng xuất'),
                           content: const Text('Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?'),
                           actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Hủy'),
-                            ),
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
                             ElevatedButton(
                               onPressed: () => Navigator.pop(ctx, true),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.priorityHigh,
-                                foregroundColor: Colors.white,
-                              ),
+                              style: ElevatedButton.styleFrom(backgroundColor: AppColors.priorityHigh, foregroundColor: Colors.white),
                               child: const Text('Đăng xuất'),
                             ),
                           ],
