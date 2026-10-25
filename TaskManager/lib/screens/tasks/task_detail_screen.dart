@@ -8,6 +8,8 @@ import '../../utils/date_formatter.dart';
 import '../../widgets/loading_view.dart';
 import '../../widgets/priority_badge.dart';
 import '../../widgets/status_badge.dart';
+import '../assignment/assign_task_screen.dart';
+import '../sharing/task_sharing_screen.dart';
 import 'task_edit_screen.dart';
 
 class TaskDetailScreen extends StatefulWidget {
@@ -191,6 +193,62 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 12),
+
+            // Quick Actions: Giao việc & Chia sẻ
+            Row(
+              children: [
+                if (task.canEdit)
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AssignTaskScreen(
+                              taskId: task.id,
+                              taskTitle: task.title,
+                            ),
+                          ),
+                        );
+                        _loadTaskData();
+                      },
+                      icon: const Icon(Icons.assignment_ind),
+                      label: const Text('Giao việc'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                if (task.canEdit && task.isOwner) const SizedBox(width: 12),
+                if (task.isOwner)
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TaskSharingScreen(
+                              taskId: task.id,
+                              taskTitle: task.title,
+                            ),
+                          ),
+                        );
+                        _loadTaskData();
+                      },
+                      icon: const Icon(Icons.share),
+                      label: const Text('Chia sẻ quyền'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 12),
 

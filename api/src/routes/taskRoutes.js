@@ -16,7 +16,14 @@ const {
   requireTaskOwner,
 } = require('../middleware/permissionMiddleware');
 
+const assignmentRoutes = require('./assignmentRoutes');
+const taskShareRoutes = require('./taskShareRoutes');
+
 router.use(protect);
+
+// Nested routes for assignment and sharing
+router.use('/:taskId/assignees', assignmentRoutes);
+router.use('/:taskId/shares', taskShareRoutes);
 
 router.route('/')
   .get(getTasks)
