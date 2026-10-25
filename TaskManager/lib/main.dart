@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'app.dart';
 import 'services/auth_service.dart';
 import 'services/task_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider.value(value: authService),
         ChangeNotifierProvider(create: (_) => TaskService()),
+        ChangeNotifierProvider(create: (_) => NotificationService()),
       ],
       child: const TaskManagerApp(),
     ),

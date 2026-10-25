@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/task.dart';
 import '../../services/task_service.dart';
+import '../../services/notification_service.dart';
 import '../../utils/constants.dart';
 import '../../widgets/loading_view.dart';
 import '../../widgets/task_card.dart';
+import '../notifications/notification_screen.dart';
+import '../profile/profile_screen.dart';
 import 'task_create_screen.dart';
 import 'task_detail_screen.dart';
 
@@ -40,6 +43,7 @@ class _TaskListScreenState extends State<TaskListScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TaskService>().fetchTasks();
+      context.read<NotificationService>().fetchUnreadCount();
     });
   }
 
@@ -226,6 +230,8 @@ class _TaskListScreenState extends State<TaskListScreen>
   @override
   Widget build(BuildContext context) {
     final taskService = context.watch<TaskService>();
+    final notificationService = context.watch<NotificationService>();
+    final unreadCount = notificationService.unreadCount;
     final tasks = taskService.tasks;
 
     return Scaffold(
@@ -243,6 +249,53 @@ class _TaskListScreenState extends State<TaskListScreen>
             icon: const Icon(Icons.sort),
             tooltip: 'Sắp xếp',
             onPressed: _showSortModal,
+          ),
+          // Notification Bell with badge
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                tooltip: 'Thông báo',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NotificationScreen()),
+                  );
+                },
+              ),
+              if (unreadCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppColors.priorityHigh,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    child: Text(
+                      unreadCount > 99 ? '99+' : '$unreadCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          IconButton(
+            icon: const Icon(Icons.account_circle_outlined),
+            tooltip: 'Tài khoản & Cá nhân',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
+            },
           ),
         ],
         bottom: TabBar(
@@ -325,7 +378,12 @@ class _TaskListScreenState extends State<TaskListScreen>
                         ),
                       )
                     : RefreshIndicator(
-                        onRefresh: () => taskService.fetchTasks(),
+                        onRefresh: () async {
+                          await taskService.fetchTasks();
+                          if (mounted) {
+                            context.read<NotificationService>().fetchUnreadCount();
+                          }
+                        },
                         child: ListView.builder(
                           padding: const EdgeInsets.only(bottom: 80),
                           itemCount: tasks.length,
