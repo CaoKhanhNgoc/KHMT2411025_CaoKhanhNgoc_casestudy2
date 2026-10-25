@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/task.dart';
 import '../../models/task_activity.dart';
+import '../../services/statistics_service.dart';
 import '../../services/task_service.dart';
 import '../../utils/constants.dart';
 import '../../utils/date_formatter.dart';
@@ -22,6 +23,7 @@ class TaskDetailScreen extends StatefulWidget {
 }
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
+  final StatisticsService _statsService = StatisticsService();
   Task? _task;
   List<TaskActivity> _activities = [];
   bool _isLoading = true;
@@ -110,6 +112,92 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
   }
 
+  void _showEmailLogsDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return FutureBuilder<List<dynamic>>(
+          future: _statsService.getTaskEmailLogs(widget.taskId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const AlertDialog(
+                title: Text('Lịch Sử Gửi Email'),
+                content: SizedBox(
+                  height: 100,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              );
+            }
+
+            final logs = snapshot.data ?? [];
+
+            return AlertDialog(
+              title: const Text('Lịch Sử Gửi Email'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: logs.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text('Chưa có email nào được gửi cho công việc này'),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: logs.length,
+                        separatorBuilder: (_, __) => const Divider(),
+                        itemBuilder: (context, index) {
+                          final log = logs[index];
+                          final isSent = log['status'] == 'sent';
+                          final isFailed = log['status'] == 'failed';
+
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(
+                              isSent ? Icons.check_circle : (isFailed ? Icons.error : Icons.access_time),
+                              color: isSent ? AppColors.statusCompleted : (isFailed ? AppColors.priorityHigh : Colors.amber),
+                            ),
+                            title: Text(log['subject'] ?? 'Email thông báo', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Tới: ${log['recipientEmail']}', style: const TextStyle(fontSize: 12)),
+                                Text('Trạng thái: ${log['status']} (Lần thử: ${log['attempts']})', style: const TextStyle(fontSize: 11)),
+                                if (log['errorMessage'] != null)
+                                  Text('Lỗi: ${log['errorMessage']}', style: const TextStyle(fontSize: 11, color: AppColors.priorityHigh)),
+                              ],
+                            ),
+                            trailing: isFailed
+                                ? IconButton(
+                                    icon: const Icon(Icons.refresh, color: AppColors.primary),
+                                    tooltip: 'Thử gửi lại',
+                                    onPressed: () async {
+                                      try {
+                                        await _statsService.retryEmail(log['_id']);
+                                        Navigator.pop(ctx);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Đang thử gửi lại email...')),
+                                        );
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.priorityHigh),
+                                        );
+                                      }
+                                    },
+                                  )
+                                : null,
+                          );
+                        },
+                      ),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đóng')),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -134,6 +222,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.mark_email_read_outlined),
+            tooltip: 'Lịch sử email',
+            onPressed: _showEmailLogsDialog,
+          ),
           if (task.canEdit)
             IconButton(
               icon: const Icon(Icons.edit),
