@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/auth_service.dart';
+import 'services/task_service.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/profile/profile_screen.dart';
-import 'widgets/loading_view.dart';
+import 'screens/tasks/task_list_screen.dart';
 import 'utils/constants.dart';
 
 class TaskManagerApp extends StatelessWidget {
@@ -26,8 +26,7 @@ class TaskManagerApp extends StatelessWidget {
       home: Consumer<AuthService>(
         builder: (context, authService, _) {
           if (authService.isAuthenticated) {
-            // Once user is logged in, profile or task list will be displayed
-            return const ProfileScreen();
+            return const TaskListScreen();
           }
           return const LoginScreen();
         },
