@@ -9,6 +9,7 @@ const {
   updateTaskStatus,
   getTaskActivities,
 } = require('../controllers/taskController');
+const { getTaskEmailLogs } = require('../controllers/emailLogController');
 const { protect } = require('../middleware/authMiddleware');
 const {
   requireTaskAccess,
@@ -36,5 +37,6 @@ router.route('/:id')
 
 router.patch('/:id/status', requireTaskEditor, updateTaskStatus);
 router.get('/:id/activities', requireTaskAccess, getTaskActivities);
+router.get('/:id/email-logs', requireTaskAccess, getTaskEmailLogs);
 
 module.exports = router;
