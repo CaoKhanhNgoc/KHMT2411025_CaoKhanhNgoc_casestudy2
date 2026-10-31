@@ -2,8 +2,8 @@
 
 ## 📌 Thông Tin Sinh Viên
 - **Họ và tên:** Cao Khánh Ngọc
-- **Mã số sinh viên (MSSV):** 2411025
-- **Tên Repository GitHub:** `case2_2411025_CaoKhanhNgoc`
+- **Mã số sinh viên (MSSV):** KHMT2411025
+- **Tên Repository GitHub:** `casestudy2_KHMT2411025_CaoKhanhNgoc`
 - **Công nghệ sử dụng:** Flutter • Node.js/Express REST API • MongoDB • Email Notification (Nodemailer)
 
 ---
