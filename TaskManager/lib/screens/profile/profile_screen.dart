@@ -5,7 +5,6 @@ import '../../services/auth_service.dart';
 import '../../services/statistics_service.dart';
 import '../../utils/constants.dart';
 import '../../utils/validators.dart';
-import '../../widgets/loading_view.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

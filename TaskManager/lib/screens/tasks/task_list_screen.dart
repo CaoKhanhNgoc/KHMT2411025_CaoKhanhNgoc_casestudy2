@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/task.dart';
 import '../../services/task_service.dart';
 import '../../services/notification_service.dart';
 import '../../utils/constants.dart';
