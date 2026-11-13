@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../../utils/constants.dart';
 import '../../utils/validators.dart';
+import '../tasks/task_list_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -40,6 +41,10 @@ class _LoginScreenState extends State<LoginScreen> {
             content: Text('Đăng nhập thành công!'),
             backgroundColor: AppColors.statusCompleted,
           ),
+        );
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const TaskListScreen()),
+          (route) => false,
         );
       }
     } catch (e) {

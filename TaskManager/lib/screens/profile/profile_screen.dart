@@ -5,6 +5,7 @@ import '../../services/auth_service.dart';
 import '../../services/statistics_service.dart';
 import '../../utils/constants.dart';
 import '../../utils/validators.dart';
+import '../auth/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -240,7 +241,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = authService.currentUser;
 
     if (user == null) {
-      return const Center(child: Text('Chưa đăng nhập'));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     return Scaffold(
@@ -506,6 +509,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                       if (confirm == true) {
                         await authService.logout();
+                        if (context.mounted) {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            (route) => false,
+                          );
+                        }
                       }
                     },
                   ),
