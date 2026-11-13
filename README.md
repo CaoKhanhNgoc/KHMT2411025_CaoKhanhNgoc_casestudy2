@@ -2,8 +2,8 @@
 
 ## 📌 Thông Tin Sinh Viên
 - **Họ và tên:** Cao Khánh Ngọc
-- **Mã số sinh viên (MSSV):** KHMT2411025
-- **Tên Repository GitHub:** `casestudy2_KHMT2411025_CaoKhanhNgoc`
+- **Mã số sinh viên (MSSV):** 2411025
+- **Tên Repository GitHub:** `case2_2411025_CaoKhanhNgoc`
 - **Công nghệ sử dụng:** Flutter • Node.js/Express REST API • MongoDB • Email Notification (Nodemailer)
 
 ---
@@ -90,13 +90,13 @@ casestudy2/
 ---
 
 ## 🌿 Phân Bổ Triển Khai Qua 3 Buổi (Git Branches)
-- **`buoi-1` (hoặc `buoi1`)**: 
+- **`buoi1`**: 
   - **Nội dung:** Đăng ký/đăng nhập; xác thực API; danh sách và chi tiết công việc; GET dữ liệu từ MongoDB.
   - **Kết quả mong đợi:** Người dùng đăng nhập và đọc được dữ liệu công việc.
-- **`buoi-2` (hoặc `buoi2`)**: 
+- **`buoi2`**: 
   - **Nội dung:** Thêm/sửa/xóa; giao việc nhiều người; chia sẻ quyền viewer/editor; kiểm tra phân quyền backend.
   - **Kết quả mong đợi:** Hoàn thành CRUD, giao việc và chia sẻ có kiểm soát.
-- **`buoi-3` (hoặc `buoi3`)**: 
+- **`buoi3`**: 
   - **Nội dung:** Email khi giao việc/chia sẻ; thông báo trong ứng dụng; tìm kiếm, lọc, thống kê và kiểm thử.
   - **Kết quả mong đợi:** Hoàn thiện luồng nghiệp vụ chính và kiểm thử tích hợp.
 - **`main`**: Nhánh chính chứa toàn bộ mã nguồn tích hợp hoàn chỉnh.
