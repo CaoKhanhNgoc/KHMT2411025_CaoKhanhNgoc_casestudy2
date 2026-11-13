@@ -89,8 +89,21 @@ casestudy2/
 
 ---
 
-## 🌿 Danh Sách Nhánh Git (Git Branches)
-- `main`: Nhánh chính chứa toàn bộ mã nguồn tích hợp hoàn chỉnh.
+## 🌿 Phân Bổ Triển Khai Qua 3 Buổi (Git Branches)
+- **`buoi-1` (hoặc `buoi1`)**: 
+  - **Nội dung:** Đăng ký/đăng nhập; xác thực API; danh sách và chi tiết công việc; GET dữ liệu từ MongoDB.
+  - **Kết quả mong đợi:** Người dùng đăng nhập và đọc được dữ liệu công việc.
+- **`buoi-2` (hoặc `buoi2`)**: 
+  - **Nội dung:** Thêm/sửa/xóa; giao việc nhiều người; chia sẻ quyền viewer/editor; kiểm tra phân quyền backend.
+  - **Kết quả mong đợi:** Hoàn thành CRUD, giao việc và chia sẻ có kiểm soát.
+- **`buoi-3` (hoặc `buoi3`)**: 
+  - **Nội dung:** Email khi giao việc/chia sẻ; thông báo trong ứng dụng; tìm kiếm, lọc, thống kê và kiểm thử.
+  - **Kết quả mong đợi:** Hoàn thiện luồng nghiệp vụ chính và kiểm thử tích hợp.
+- **`main`**: Nhánh chính chứa toàn bộ mã nguồn tích hợp hoàn chỉnh.
+
+---
+
+## 📌 Các Nhánh Tính Năng Chi Tiết (Feature Branches)
 - `feature/A-auth-and-account`: Chức năng Quản lý tài khoản và xác thực (Đăng ký, Đăng nhập, Đăng xuất, Cập nhật thông tin, Đổi mật khẩu).
 - `feature/B-task-management`: Chức năng Quản lý công việc (CRUD công việc, trạng thái, mức độ ưu tiên, ngày bắt đầu & hạn chót, tìm kiếm, lọc, sắp xếp).
 - `feature/C-assignment-and-sharing`: Chức năng Giao việc và Chia sẻ phân quyền (Chỉ định người phụ trách chính, cấp quyền Viewer/Editor, thu hồi quyền).
