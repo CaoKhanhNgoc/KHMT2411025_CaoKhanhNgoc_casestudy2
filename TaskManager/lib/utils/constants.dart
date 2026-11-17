@@ -25,22 +25,47 @@ class AppConstants {
   static const String keyApiUrl = 'custom_api_url';
 }
 
+/// Bảng màu Pastel hiện đại, nhẹ nhàng và thanh lịch
 class AppColors {
-  static const Color primary = Color(0xFF1976D2);
-  static const Color primaryLight = Color(0xFFBBDEFB);
-  static const Color primaryDark = Color(0xFF0D47A1);
-  static const Color secondary = Color(0xFF26A69A);
+  // Màu chủ đạo (Pastel Periwinkle / Lavender Blue)
+  static const Color primary = Color(0xFF7C83FD);
+  static const Color primaryLight = Color(0xFFEEF2FF);
+  static const Color primaryDark = Color(0xFF5A63D8);
+  static const Color primaryMuted = Color(0xFF96A7FF);
 
-  static const Color statusTodo = Color(0xFF757575);
-  static const Color statusInProgress = Color(0xFF0288D1);
-  static const Color statusCompleted = Color(0xFF388E3C);
+  // Màu phụ (Pastel Sage Mint)
+  static const Color secondary = Color(0xFF7BC0A3);
+  static const Color secondaryLight = Color(0xFFE8F6EF);
 
-  static const Color priorityLow = Color(0xFF4CAF50);
-  static const Color priorityMedium = Color(0xFFFFA000);
-  static const Color priorityHigh = Color(0xFFD32F2F);
+  // Trạng thái Pastel (Status)
+  static const Color statusTodo = Color(0xFF94A3B8);        // Pastel Slate Grey
+  static const Color statusTodoBg = Color(0xFFF1F5F9);
+  static const Color statusInProgress = Color(0xFF60A5FA);  // Pastel Sky Blue
+  static const Color statusInProgressBg = Color(0xFFEFF6FF);
+  static const Color statusCompleted = Color(0xFF34D399);   // Pastel Soft Mint
+  static const Color statusCompletedBg = Color(0xFFECFDF5);
 
-  static const Color background = Color(0xFFF5F7FA);
+  // Mức độ ưu tiên Pastel (Priority)
+  static const Color priorityLow = Color(0xFF38B2AC);       // Pastel Soft Teal
+  static const Color priorityLowBg = Color(0xFFE6FFFA);
+  static const Color priorityMedium = Color(0xFFF6AD55);    // Pastel Warm Apricot
+  static const Color priorityMediumBg = Color(0xFFFFFAF0);
+  static const Color priorityHigh = Color(0xFFFC8181);      // Pastel Soft Rose Coral
+  static const Color priorityHighBg = Color(0xFFFFF5F5);
+
+  // Nền & bề mặt (Background & Surfaces)
+  static const Color background = Color(0xFFF8F9FD);        // Nền kem sáng pastel siêu mịn
   static const Color surface = Colors.white;
-  static const Color textPrimary = Color(0xFF212121);
-  static const Color textSecondary = Color(0xFF757575);
+  static const Color cardBorder = Color(0xFFEBF0F7);        // Viền thẻ siêu mờ tinh tế
+  static const Color inputFill = Color(0xFFF8FAFC);         // Nền ô nhập liệu pastel
+
+  // Chữ & văn bản (Typography)
+  static const Color textPrimary = Color(0xFF2D3748);       // Xám than đậm (thay cho đen gắt)
+  static const Color textSecondary = Color(0xFF718096);     // Xám trung tính dịu mắt
+  static const Color textMuted = Color(0xFFA0AEC0);         // Xám mờ
+
+  // Màu nhấn thêm (Accent Pastels)
+  static const Color accentLilac = Color(0xFFC4B5FD);       // Tím pastel
+  static const Color accentPeach = Color(0xFFFDBA74);       // Đào pastel
+  static const Color accentSky = Color(0xFFBAE6FD);         // Xanh da trời pastel
 }

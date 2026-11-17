@@ -430,30 +430,57 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           Expanded(
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                backgroundColor: task.status == 'todo' ? AppColors.statusTodo.withOpacity(0.2) : null,
+                                backgroundColor: task.status == 'todo' ? AppColors.statusTodoBg : null,
+                                side: BorderSide(
+                                  color: task.status == 'todo' ? AppColors.statusTodo : AppColors.cardBorder,
+                                ),
                               ),
                               onPressed: () => _updateStatus('todo'),
-                              child: const Text('Chưa làm'),
+                              child: Text(
+                                'Chưa làm',
+                                style: TextStyle(
+                                  color: task.status == 'todo' ? AppColors.statusTodo : AppColors.textSecondary,
+                                  fontWeight: task.status == 'todo' ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                backgroundColor: task.status == 'in_progress' ? AppColors.statusInProgress.withOpacity(0.2) : null,
+                                backgroundColor: task.status == 'in_progress' ? AppColors.statusInProgressBg : null,
+                                side: BorderSide(
+                                  color: task.status == 'in_progress' ? AppColors.statusInProgress : AppColors.cardBorder,
+                                ),
                               ),
                               onPressed: () => _updateStatus('in_progress'),
-                              child: const Text('Đang làm'),
+                              child: Text(
+                                'Đang làm',
+                                style: TextStyle(
+                                  color: task.status == 'in_progress' ? AppColors.statusInProgress : AppColors.textSecondary,
+                                  fontWeight: task.status == 'in_progress' ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                backgroundColor: task.status == 'completed' ? AppColors.statusCompleted.withOpacity(0.2) : null,
+                                backgroundColor: task.status == 'completed' ? AppColors.statusCompletedBg : null,
+                                side: BorderSide(
+                                  color: task.status == 'completed' ? AppColors.statusCompleted : AppColors.cardBorder,
+                                ),
                               ),
                               onPressed: () => _updateStatus('completed'),
-                              child: const Text('Hoàn thành'),
+                              child: Text(
+                                'Hoàn thành',
+                                style: TextStyle(
+                                  color: task.status == 'completed' ? AppColors.statusCompleted : AppColors.textSecondary,
+                                  fontWeight: task.status == 'completed' ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
                             ),
                           ),
                         ],

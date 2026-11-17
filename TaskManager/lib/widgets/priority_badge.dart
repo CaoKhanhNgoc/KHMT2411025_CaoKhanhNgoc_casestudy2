@@ -18,6 +18,18 @@ class PriorityBadge extends StatelessWidget {
     }
   }
 
+  Color _getBgColor() {
+    switch (priority) {
+      case AppConstants.priorityHigh:
+        return AppColors.priorityHighBg;
+      case AppConstants.priorityMedium:
+        return AppColors.priorityMediumBg;
+      case AppConstants.priorityLow:
+      default:
+        return AppColors.priorityLowBg;
+    }
+  }
+
   String _getLabel() {
     switch (priority) {
       case AppConstants.priorityHigh:
@@ -33,19 +45,22 @@ class PriorityBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _getColor();
+    final bgColor = _getBgColor();
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.5)),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),
       child: Text(
         _getLabel(),
         style: TextStyle(
           color: color,
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.w600,
+          letterSpacing: 0.1,
         ),
       ),
     );

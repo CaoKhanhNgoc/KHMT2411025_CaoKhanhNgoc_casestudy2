@@ -149,8 +149,8 @@ class _AssignTaskScreenState extends State<AssignTaskScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Card(
-                    color: AppColors.primaryLight.withOpacity(0.3),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    color: AppColors.primaryLight,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Text(
@@ -211,12 +211,13 @@ class _AssignTaskScreenState extends State<AssignTaskScreen> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: Colors.amber.withOpacity(0.2),
-                                          borderRadius: BorderRadius.circular(4),
+                                          color: AppColors.priorityMediumBg,
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(color: AppColors.priorityMedium.withValues(alpha: 0.3)),
                                         ),
                                         child: const Text(
                                           'Chính',
-                                          style: TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontSize: 11, color: AppColors.priorityMedium, fontWeight: FontWeight.bold),
                                         ),
                                       ),
                                     ],

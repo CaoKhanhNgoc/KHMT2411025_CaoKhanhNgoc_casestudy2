@@ -18,6 +18,18 @@ class StatusBadge extends StatelessWidget {
     }
   }
 
+  Color _getBgColor() {
+    switch (status) {
+      case AppConstants.statusInProgress:
+        return AppColors.statusInProgressBg;
+      case AppConstants.statusCompleted:
+        return AppColors.statusCompletedBg;
+      case AppConstants.statusTodo:
+      default:
+        return AppColors.statusTodoBg;
+    }
+  }
+
   String _getLabel() {
     switch (status) {
       case AppConstants.statusInProgress:
@@ -30,34 +42,42 @@ class StatusBadge extends StatelessWidget {
     }
   }
 
+  IconData _getIcon() {
+    switch (status) {
+      case AppConstants.statusInProgress:
+        return Icons.timelapse_rounded;
+      case AppConstants.statusCompleted:
+        return Icons.check_circle_rounded;
+      case AppConstants.statusTodo:
+      default:
+        return Icons.radio_button_unchecked_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = _getColor();
+    final bgColor = _getBgColor();
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.5)),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.28), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-          ),
+          Icon(_getIcon(), size: 12, color: color),
           const SizedBox(width: 4),
           Text(
             _getLabel(),
             style: TextStyle(
               color: color,
-              fontSize: 12,
+              fontSize: 11.5,
               fontWeight: FontWeight.w600,
+              letterSpacing: 0.1,
             ),
           ),
         ],

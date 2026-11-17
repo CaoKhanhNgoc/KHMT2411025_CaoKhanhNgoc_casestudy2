@@ -196,8 +196,8 @@ class _TaskSharingScreenState extends State<TaskSharingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Card(
-                    color: AppColors.secondary.withOpacity(0.15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    color: AppColors.secondaryLight,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Text(
@@ -272,8 +272,8 @@ class _TaskSharingScreenState extends State<TaskSharingScreen> {
                                         ),
                                       ),
                                       backgroundColor: isEditor
-                                          ? AppColors.primaryLight.withOpacity(0.5)
-                                          : Colors.grey.shade200,
+                                          ? AppColors.primaryLight
+                                          : AppColors.statusTodoBg,
                                       padding: EdgeInsets.zero,
                                     ),
                                     PopupMenuButton<String>(
